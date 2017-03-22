@@ -5,12 +5,17 @@ import java.util.Objects;
 /**
  * Created by Yassine on 2017-03-20.
  */
-public class Three {
+public class Tree {
     private Objects value;
-    private Three LeftNode;
-    private Three rightNode;
+    private Tree LeftNode;
+    private Tree rightNode;
+    
+    public Tree()
+    {
+    	
+    }
 
-    public Three(Objects value, Three leftNode, Three rightNode) {
+    public Tree(Objects value, Tree leftNode, Tree rightNode) {
         this.value = value;
         LeftNode = leftNode;
         this.rightNode = rightNode;
@@ -25,19 +30,19 @@ public class Three {
         this.value = value;
     }
 
-    public Three getLeftNode() {
+    public Tree getLeftNode() {
         return LeftNode;
     }
 
-    public void setLeftNode(Three leftNode) {
+    public void setLeftNode(Tree leftNode) {
         LeftNode = leftNode;
     }
 
-    public Three getRightNode() {
+    public Tree getRightNode() {
         return rightNode;
     }
 
-    public void setRightNode(Three rightNode) {
+    public void setRightNode(Tree rightNode) {
         this.rightNode = rightNode;
     }
 }

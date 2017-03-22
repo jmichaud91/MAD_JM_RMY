@@ -12,10 +12,13 @@ public class DatasetContainer {
 
 	List<String> columnsName = new ArrayList<>();
 	List<Map<String, String>> lines;
+	List<String> labels;
 
+	// Take into account that the exit classes are on the end of the file
 	public DatasetContainer(String filepath) throws IOException {
 		columnsName = new ArrayList<>();
 		lines = new ArrayList<>();
+		labels = new ArrayList<>();
 		readCSVDataFile(filepath);
 	}
 
@@ -37,11 +40,21 @@ public class DatasetContainer {
 					}
 					continue;
 				}
-
-				for (int i = 0; i < lineSplit.length; i++) {
-					lineMap.put(columnsName.get(i), lineSplit[i]);
+				else
+				{
+					// Add the labels to the list of labels. By default, labels are located at the end of the file (TODO)
+					if (!labels.contains(lineSplit[lineSplit.length-1]))
+					{
+						labels.add(lineSplit[lineSplit.length-1]);
+					}
+					for (int i = 0; i < lineSplit.length; i++) {
+						lineMap.put(columnsName.get(i), lineSplit[i]);
+					}
+					lines.add(lineMap);
 				}
-				lines.add(lineMap);
+
+				
+				
 
 			}
 		} finally {
