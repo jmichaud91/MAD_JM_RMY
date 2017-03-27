@@ -11,7 +11,7 @@ import java.util.Map;
 public class DatasetContainer {
 
 	List<String> columnsName = new ArrayList<>();
-	List<Map<String, String>> lines;
+	List<Map<String, Double>> lines;
 	List<String> labels;
 
 	// Take into account that the exit classes are on the end of the file
@@ -20,6 +20,57 @@ public class DatasetContainer {
 		lines = new ArrayList<>();
 		labels = new ArrayList<>();
 		readCSVDataFile(filepath);
+	}
+	// Just for test
+	public DatasetContainer()
+	{
+		columnsName.add("testPlus");
+		columnsName.add("testMoins");
+		lines = new ArrayList<>();
+		
+		Map<String,Double> map = new HashMap<>();
+		map.put("testPlus", 6d);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testPlus", 7d);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testPlus", 6d);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testPlus", 3d);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testPlus", 2d);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testPlus", 4d);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testPlus", 2d);
+		lines.add(map);
+		
+		map = new HashMap<>();
+		map.put("testMoins", 0.2);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testMoins", 0.3);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testMoins", 0.5);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testMoins", 0.65);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testMoins", 1d);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testMoins", 1.2);
+		lines.add(map);
+		map = new HashMap<>();
+		map.put("testMoins", 1.7);
+		lines.add(map);
 	}
 
 	public List<Map<String, String>> readCSVDataFile(String filePath) throws IOException {
@@ -64,7 +115,7 @@ public class DatasetContainer {
 
 	}
 	
-	public List<Map<String,String>> getdata()
+	public List<Map<String,Double>> getdata()
 	{
 		return lines;
 	}
