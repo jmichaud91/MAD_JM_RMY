@@ -11,13 +11,14 @@ public class Main {
 		//a.setVisible(true);
 		
 		String filepath ="Dataset.csv";
+		String filepathTest = "ForTest_ArbreDecisionAttrNum.txt";
 		
 		DatasetContainer trainingData = null;
 		try
 		{
-		// trainingData = new DatasetContainer(filepath);
-			 trainingData = new DatasetContainer(); // TODO remove. its for test
+		 trainingData = new DatasetContainer(filepathTest);
 			 TreeBuilder builder = new TreeBuilder();
+			 trainingData.getdata();
 			 builder.buildTree(trainingData);
 		 
 			// do stuff

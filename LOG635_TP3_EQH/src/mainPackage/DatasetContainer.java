@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,13 +12,13 @@ import java.util.Map;
 public class DatasetContainer {
 
 	List<String> columnsName = new ArrayList<>();
-	List<Map<String, Double>> lines;
+	Map<String, List<Double>> columns;
 	List<String> labels;
 
 	// Take into account that the exit classes are on the end of the file
 	public DatasetContainer(String filepath) throws IOException {
 		columnsName = new ArrayList<>();
-		lines = new ArrayList<>();
+		columns = new HashMap();
 		labels = new ArrayList<>();
 		readCSVDataFile(filepath);
 	}
@@ -26,56 +27,57 @@ public class DatasetContainer {
 	{
 		columnsName.add("testPlus");
 		columnsName.add("testMoins");
-		lines = new ArrayList<>();
+		columns = new HashMap();
 		
-		Map<String,Double> map = new HashMap<>();
-		map.put("testPlus", 6d);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testPlus", 7d);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testPlus", 6d);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testPlus", 3d);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testPlus", 2d);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testPlus", 4d);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testPlus", 2d);
-		lines.add(map);
-		
-		map = new HashMap<>();
-		map.put("testMoins", 0.2);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testMoins", 0.3);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testMoins", 0.5);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testMoins", 0.65);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testMoins", 1d);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testMoins", 1.2);
-		lines.add(map);
-		map = new HashMap<>();
-		map.put("testMoins", 1.7);
-		lines.add(map);
+//		Map<String,List<Double>> map = new HashMap<>();
+//		List<Double> elems = new ArrayList();
+//		elems.add(e)
+//		map.put("testPlus", 6d);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testPlus", 7d);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testPlus", 6d);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testPlus", 3d);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testPlus", 2d);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testPlus", 4d);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testPlus", 2d);
+//		columns.add(map);
+//		
+//		map = new HashMap<>();
+//		map.put("testMoins", 0.2);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testMoins", 0.3);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testMoins", 0.5);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testMoins", 0.65);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testMoins", 1d);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testMoins", 1.2);
+//		columns.add(map);
+//		map = new HashMap<>();
+//		map.put("testMoins", 1.7);
+//		columns.add(map);
 	}
 
 	public List<Map<String, String>> readCSVDataFile(String filePath) throws IOException {
-		Map<String, String> lineMap = new HashMap<>();
-		List<Map<String, String>> lines = new ArrayList<>();
+		
 		String line;
 		BufferedReader reader = null;
 		boolean firstLine = true;
@@ -89,24 +91,26 @@ public class DatasetContainer {
 					for (String s : lineSplit) {
 						columnsName.add(s);
 					}
-					continue;
+					firstLine = false;
 				}
 				else
 				{
 					// Add the labels to the list of labels. By default, labels are located at the end of the file (TODO)
-					if (!labels.contains(lineSplit[lineSplit.length-1]))
+					if (!labels.contains(lineSplit[2]))
 					{
-						labels.add(lineSplit[lineSplit.length-1]);
+						labels.add(lineSplit[2]);
 					}
 					for (int i = 0; i < lineSplit.length; i++) {
-						lineMap.put(columnsName.get(i), lineSplit[i]);
+						List<Double> l = columns.get(columnsName.get(i));
+						if (l == null)
+						{
+							l = new ArrayList<>();
+						}
+						l.add(Double.parseDouble(lineSplit[i]));
+						columns.put(columnsName.get(i), l);
 					}
-					lines.add(lineMap);
+					
 				}
-
-				
-				
-
 			}
 		} finally {
 			reader.close();
@@ -115,12 +119,22 @@ public class DatasetContainer {
 
 	}
 	
-	public List<Map<String,Double>> getdata()
+	public Map<String,List<Double>> getdata()
 	{
-		return lines;
+		Map<String,List<Double>> clone = new HashMap<>();
+		
+		for (Map.Entry<String,List<Double>> entry : columns.entrySet())
+		{
+			clone.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+		}
+		return clone;
 	}
 	public List<String> getKeys()
 	{
 		return columnsName;
+	}
+	public void setData(Map<String,List<Double>> data)
+	{
+		columns = data;
 	}
 }

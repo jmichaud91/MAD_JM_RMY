@@ -24,11 +24,11 @@ public class TreeBuilder
 	public Tree buildTree(DatasetContainer container)
 	{
 		attributes = container.getKeys();
-		List<Map<String,Double>> data = container.getdata();
-		orderedDataByAttributes = new HashMap<>();
+		Map<String,List<Double>> data = container.getdata();
+		orderedDataByAttributes = container.getdata();
 		partitionPerAttributes = new HashMap<>();
 		// Fill the orderedData attributes 
-		for (Map<String,Double> map : data)
+		/*for (Map<String,Double> map : data)
 		{
 			for (String key : attributes)
 			{
@@ -45,7 +45,7 @@ public class TreeBuilder
 				attributeData.add(map.get(key));
 				orderedDataByAttributes.put(key,attributeData);
 			}
-		}
+		}*/
 		// sort the data for every attributes
 		for (List<Double> ls : orderedDataByAttributes.values())
 		{
@@ -59,8 +59,9 @@ public class TreeBuilder
 			List<Double> partitions = new ArrayList<>();
 			for (int i = 0; i < orderedData.size() -1; i++)
 			{
-				
-				partitions.add((orderedData.get(i+1) - orderedData.get(i))/2);
+				double result = (orderedData.get(i+1) + (orderedData.get(i+1) - orderedData.get(i))/2);
+				if (result != 0)
+				partitions.add(result);
 			}
 			partitionPerAttributes.put(attribute, partitions);
 		}
