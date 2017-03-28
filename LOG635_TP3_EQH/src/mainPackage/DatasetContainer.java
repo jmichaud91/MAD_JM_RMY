@@ -13,13 +13,13 @@ public class DatasetContainer {
 
 	List<String> columnsName = new ArrayList<>();
 	Map<String, List<Double>> columns;
-	List<String> labels;
+	List<String> classes;
 
 	// Take into account that the exit classes are on the end of the file
 	public DatasetContainer(String filepath) throws IOException {
 		columnsName = new ArrayList<>();
 		columns = new HashMap();
-		labels = new ArrayList<>();
+		classes = new ArrayList<>();
 		readCSVDataFile(filepath);
 	}
 	// Just for test
@@ -95,10 +95,9 @@ public class DatasetContainer {
 				}
 				else
 				{
-					// Add the labels to the list of labels. By default, labels are located at the end of the file (TODO)
-					if (!labels.contains(lineSplit[2]))
+					if (!classes.contains(lineSplit[2]))
 					{
-						labels.add(lineSplit[2]);
+						classes.add(lineSplit[2]);
 					}
 					for (int i = 0; i < lineSplit.length; i++) {
 						List<Double> l = columns.get(columnsName.get(i));
@@ -136,5 +135,23 @@ public class DatasetContainer {
 	public void setData(Map<String,List<Double>> data)
 	{
 		columns = data;
+	}
+	
+	public List<String> getDistinctClasses()
+	{
+		List<String> distinctClasses = new ArrayList<>();
+		for (String s : classes)
+		{
+			if (!distinctClasses.contains(s))
+			{
+				distinctClasses.add(s);
+			}
+		}
+		return distinctClasses;
+	}
+	
+	public List<String> getClasses()
+	{
+		return new ArrayList<>(classes);
 	}
 }

@@ -13,8 +13,9 @@ import mainPackage.DatasetContainer;
 public class TreeBuilder 
 {
 	List<String> attributes;
-	Map<String,List<Double>> orderedDataByAttributes; // Key is the attribute name and value is the values for all lines on this attribute
+	Map<String,List<Double>> dataByAttributes; // Key is the attribute name and value is the values for all lines on this attribute
 	Map<String,List<Double>> partitionPerAttributes; // Key is the attribute name, the value is the list of partitions for this attribute
+	List<String> classes;
 	
 	public TreeBuilder()
 	{
@@ -24,9 +25,10 @@ public class TreeBuilder
 	public Tree buildTree(DatasetContainer container)
 	{
 		attributes = container.getKeys();
-		Map<String,List<Double>> data = container.getdata();
-		orderedDataByAttributes = container.getdata();
+		dataByAttributes = container.getdata();
 		partitionPerAttributes = new HashMap<>();
+		classes = container.getDistinctClasses();
+		
 		// Fill the orderedData attributes 
 		/*for (Map<String,Double> map : data)
 		{
@@ -46,6 +48,7 @@ public class TreeBuilder
 				orderedDataByAttributes.put(key,attributeData);
 			}
 		}*/
+		Map<String,List<Double>> orderedDataByAttributes = container.getdata();
 		// sort the data for every attributes
 		for (List<Double> ls : orderedDataByAttributes.values())
 		{
@@ -75,7 +78,7 @@ public class TreeBuilder
 			Map<String,List<Map<Symbol,List<Double>>>> limitationsPerAttribute = new HashMap<>();
 			for (Double partition : attributePartition)
 			{
-				double em = calculateEM(attribute, partition, limitationsPerAttribute);
+				double em = calculateEM(attribute, partition, limitationsPerAttribute.get(attribute));
 				if (em < bestEM)
 				{
 					bestEM = em;
@@ -99,88 +102,95 @@ public class TreeBuilder
 		return tree;
 	}
 	
-	private double calculateEM(String attribute, double partition, Map<String,List<Map<Symbol,List<Double>>>> limitationsPerAttribute)
+	private double calculateEM(String attribute, double partition, List<Map<Symbol,List<Double>>> limitationsForAttribute)
 	{
-		Map<String,List<Double>> orderedDataByAttributesClone = new HashMap<>();
-		for (Map.Entry<String, List<Double>> entry : orderedDataByAttributes.entrySet())
-		{
-			orderedDataByAttributesClone.put(entry.getKey(), entry.getValue());
-		}
+		List<Double> dataForAttribute;
+		dataForAttribute = dataByAttributes.get(attribute);
+		List<Double> classForAttribute = dataByAttributes.get(attribute);
 		
-		// Grande multi-boucle qui MAJ la liste de données selon les limitations
-		for (String attr : limitationsPerAttribute.keySet()) // Divise en attributs
-		{
-			for (Map<Symbol,List<Double>> constraints : limitationsPerAttribute.get(attr)) // divise en contraintes
-			{
-				for (Map.Entry<Symbol, List<Double>> entry : constraints.entrySet()) // divise en symbole/contrainte
+		
+		
+				if (limitationsForAttribute != null)
 				{
-					for (Double d : entry.getValue()) // Pour chaque contrainte
+				for (Map<Symbol, List<Double>> map : limitationsForAttribute) 
+				{
+					for (Map.Entry<Symbol, List<Double>> entry : map.entrySet())
 					{
-						Iterator<Double> it = orderedDataByAttributesClone.get(attr).iterator();
-						
-						while (it.hasNext()) // boucle sur les vrai valeurs
+						for (Double d : entry.getValue()) 
 						{
-							Double value = it.next();
-							if (entry.getKey().hasEquality() && value == d)
-							{
-								it.remove();
-							}
+							Iterator<Double> it = dataForAttribute.iterator();
 							
-							else if (entry.getKey().isGreaterThan() && value > d)
+							while (it.hasNext())
 							{
-								it.remove();
-							}
-							else if (!entry.getKey().isGreaterThan() && value < d)
-							{
-								it.remove();
+								Double value = it.next();
+								if (entry.getKey().hasEquality() && value == d)
+								{
+									it.remove();
+								}
+								
+								else if (entry.getKey().isGreaterThan() && value > d)
+								{
+									it.remove();
+								}
+								else if (!entry.getKey().isGreaterThan() && value < d)
+								{
+									it.remove();
+								}
 							}
 						}
 					}
+					
 				}
-			}
-		}
+				}
+			
 		
-		int countGreatherEqualThan = 0;
+		
+		//int countGreatherEqualThan = 0;
 		int countTotalGreaterEqualThan = 0;
 		
-		int countLowerThan = 0;
+		//int countLowerThan = 0;
 		int countTotalLowerThan = 0;
-		// Calculate P+ and P-
-		for (Map.Entry<String, List<Double>> entry : orderedDataByAttributesClone.entrySet())
+		Map<String,Double> countAbovePartitionPerClass = new HashMap();
+		Map<String,Double> countBelowPartitionPerClass = new HashMap();
+		for (String s : classes)
 		{
-			for (Double d : entry.getValue())
+			countAbovePartitionPerClass.put(s, 0d);
+			countBelowPartitionPerClass.put(s, 0d);
+		}
+		// Calculate P+ and P-
+			for (int i = 0; i < dataForAttribute.size(); i++)
 			{
-				if (entry.getKey().equals(attribute))
-				{
-					if (d >= partition)
+					if (dataForAttribute.get(i) >= partition)
 					{
-						countGreatherEqualThan++;
-					}
-					else
-					{
-						countLowerThan++;
-					}
-				}
-				
-				
-					if (d >= partition)
-					{
+						countAbovePartitionPerClass.put(String.valueOf(classForAttribute.get(i)), classForAttribute.get(i) + 1);
 						countTotalGreaterEqualThan++;
 					}
 					else
 					{
+						countBelowPartitionPerClass.put(String.valueOf(classForAttribute.get(i)), classForAttribute.get(i) + 1);
 						countTotalLowerThan++;
 					}
 			}
-		}
 		
 		
-		double pPlus = countGreatherEqualThan/countTotalGreaterEqualThan;
-		double pMinus = countLowerThan/countTotalLowerThan;
+		
+		//double pPlus = countGreatherEqualThan/countTotalGreaterEqualThan;
+		//double pMinus = countLowerThan/countTotalLowerThan;
+			double pPlus;
+			double pMinus;
+			double entropyPlus = 0;
+			double entropyMinus = 0;
+			for (String s : classes)
+			{
+				pPlus = countAbovePartitionPerClass.get(s)/ countTotalGreaterEqualThan;
+				pMinus = countBelowPartitionPerClass.get(s)/countTotalLowerThan;
+				entropyPlus = entropyPlus - pPlus*log2(pPlus);
+				entropyMinus = entropyMinus - pMinus*log2(pMinus);
+			}
 		double pPlusMaj = countTotalGreaterEqualThan/(countTotalGreaterEqualThan + countTotalLowerThan);
 		double pPlusMinus = countTotalLowerThan/(countTotalGreaterEqualThan + countTotalLowerThan);
-		double entropyPlus = -pPlus*log2(pPlus) - (1 - pPlus)*log2(pPlus);
-		double entropyMinus = -pMinus*log2(pMinus) - (1 - pMinus)*log2(pMinus);
+		//double entropyPlus = -pPlus*log2(pPlus) - (1 - pPlus)*log2(pPlus);
+		//double entropyMinus = -pMinus*log2(pMinus) - (1 - pMinus)*log2(pMinus);
 		double EM = pPlusMaj*entropyPlus + (1-pPlusMaj)*entropyMinus;
 		return EM;
 		
