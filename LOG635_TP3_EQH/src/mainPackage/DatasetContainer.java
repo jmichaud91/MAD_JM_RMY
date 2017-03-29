@@ -153,10 +153,6 @@ public class DatasetContainer {
 	{
 		return columnsName;
 	}
-	public void setData(Map<String,List<Double>> data)
-	{
-		columns = data;
-	}
 	
 	public List<String> getDistinctClasses()
 	{
