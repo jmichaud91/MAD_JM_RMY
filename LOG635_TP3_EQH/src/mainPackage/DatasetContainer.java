@@ -137,7 +137,6 @@ public class DatasetContainer {
 						} catch (Exception e )
 						{
 							l.add(null);
-							convertNullCount++;
 						}
 						
 						columns.put(columnsName.get(i), l);
