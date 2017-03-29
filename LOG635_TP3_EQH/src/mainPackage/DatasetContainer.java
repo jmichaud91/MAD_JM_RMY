@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.crypto.NullCipher;
+
 public class DatasetContainer {
 
 	List<String> columnsName;
@@ -98,7 +100,6 @@ public class DatasetContainer {
 	}
 
 	public List<Map<String, String>> readCSVDataFile(String filePath) throws IOException {
-		
 		String line;
 		BufferedReader reader = null;
 		boolean firstLine = true;
@@ -128,10 +129,15 @@ public class DatasetContainer {
 						}
 						try
 						{
+							if (lineSplit[i].contains("\""))
+							{
+								lineSplit[i] = lineSplit[i].replace("\"", "");
+							}
 							l.add(Double.parseDouble(lineSplit[i]));	
 						} catch (Exception e )
 						{
 							l.add(null);
+							convertNullCount++;
 						}
 						
 						columns.put(columnsName.get(i), l);
