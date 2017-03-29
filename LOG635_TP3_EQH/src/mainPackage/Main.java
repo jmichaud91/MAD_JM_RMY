@@ -19,14 +19,14 @@ public class Main {
 		DatasetContainer trainingData = null;
 		try
 		{
-		 trainingData = new DatasetContainer(filepathTest);
+		 trainingData = new DatasetContainer(filepath);
 			 TreeBuilder builder = new TreeBuilder();
 			 Map<String,List<Double>> data = trainingData.getdata();
 			 data.remove("Positionx");
 			 List<String> columnNames = trainingData.getColumnNames();
 			 columnNames.remove(0);
 			 
-			 builder.buildTree(new DatasetContainer(data, columnNames));
+			// builder.buildTree(new DatasetContainer(data, columnNames));
 		 
 			// do stuff
 		} catch(Exception e)

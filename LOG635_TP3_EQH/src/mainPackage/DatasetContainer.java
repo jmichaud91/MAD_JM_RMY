@@ -126,7 +126,14 @@ public class DatasetContainer {
 						{
 							l = new ArrayList<>();
 						}
-						l.add(Double.parseDouble(lineSplit[i]));
+						try
+						{
+							l.add(Double.parseDouble(lineSplit[i]));	
+						} catch (Exception e )
+						{
+							l.add(null);
+						}
+						
 						columns.put(columnsName.get(i), l);
 					}
 					
