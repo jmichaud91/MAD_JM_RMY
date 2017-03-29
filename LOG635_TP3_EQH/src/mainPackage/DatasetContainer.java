@@ -25,14 +25,15 @@ public class DatasetContainer {
 		readCSVDataFile(filepath);
 	}
 	
-	public DatasetContainer(Map<String,List<Double>> data, List<String> columnName)
+	public DatasetContainer(Map<String,List<Double>> data)
 	{
 		columns = new HashMap<>();
 		classes = new ArrayList<>();
+		columnsName = new ArrayList<>();
 		
-		this.columnsName = new ArrayList<>(columnName);
 		for (Map.Entry<String,List<Double>> entry : data.entrySet())
 		{
+			columnsName.add(entry.getKey());
 			if (entry.getKey().equals(columnsName.get(1)))
 			{
 				for (Double d : entry.getValue())
