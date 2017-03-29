@@ -34,7 +34,8 @@ public class DatasetContainer {
 		for (Map.Entry<String,List<Double>> entry : data.entrySet())
 		{
 			columnsName.add(entry.getKey());
-			if (entry.getKey().equals(columnsName.get(1)))
+			// If we are at the second line set the classes
+			if (columnsName.size() ==2 )
 			{
 				for (Double d : entry.getValue())
 				{
