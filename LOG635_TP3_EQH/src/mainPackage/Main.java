@@ -1,5 +1,8 @@
 package mainPackage;
 
+import java.util.List;
+import java.util.Map;
+
 import arbreDecision.TreeBuilder;
 import form.mainForm;
 
@@ -18,8 +21,12 @@ public class Main {
 		{
 		 trainingData = new DatasetContainer(filepathTest);
 			 TreeBuilder builder = new TreeBuilder();
-			 trainingData.getdata();
-			 builder.buildTree(trainingData);
+			 Map<String,List<Double>> data = trainingData.getdata();
+			 data.remove("Positionx");
+			 List<String> columnNames = trainingData.getColumnNames();
+			 columnNames.remove(0);
+			 
+			 builder.buildTree(new DatasetContainer(data, columnNames));
 		 
 			// do stuff
 		} catch(Exception e)

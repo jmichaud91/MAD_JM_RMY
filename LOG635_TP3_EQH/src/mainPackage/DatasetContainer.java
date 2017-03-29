@@ -11,16 +11,37 @@ import java.util.Map;
 
 public class DatasetContainer {
 
-	List<String> columnsName = new ArrayList<>();
+	List<String> columnsName;
 	Map<String, List<Double>> columns;
 	List<String> classes;
 
 	// Take into account that the exit classes are on the end of the file
 	public DatasetContainer(String filepath) throws IOException {
 		columnsName = new ArrayList<>();
-		columns = new HashMap();
+		columns = new HashMap<>();
 		classes = new ArrayList<>();
 		readCSVDataFile(filepath);
+	}
+	
+	public DatasetContainer(Map<String,List<Double>> data, List<String> columnName)
+	{
+		columns = new HashMap<>();
+		classes = new ArrayList<>();
+		
+		this.columnsName = new ArrayList<>(columnName);
+		for (Map.Entry<String,List<Double>> entry : data.entrySet())
+		{
+			if (entry.getKey().equals(columnsName.get(1)))
+			{
+				for (Double d : entry.getValue())
+				{
+					classes.add(String.valueOf(d));
+				}
+			}
+			columns.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+		}
+		
+		
 	}
 	// Just for test
 	public DatasetContainer()
@@ -95,10 +116,10 @@ public class DatasetContainer {
 				}
 				else
 				{
-					if (!classes.contains(lineSplit[2]))
-					{
+					//if (!classes.contains(lineSplit[2]))
+					//{
 						classes.add(lineSplit[2]);
-					}
+				//	}
 					for (int i = 0; i < lineSplit.length; i++) {
 						List<Double> l = columns.get(columnsName.get(i));
 						if (l == null)
@@ -153,5 +174,10 @@ public class DatasetContainer {
 	public List<String> getClasses()
 	{
 		return new ArrayList<>(classes);
+	}
+	
+	public List<String> getColumnNames()
+	{
+		return new ArrayList<>(columnsName);
 	}
 }
