@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class DatasetContainer {
 	// Take into account that the exit classes are on the end of the file
 	public DatasetContainer(String filepath) throws IOException {
 		columnsName = new ArrayList<>();
-		columns = new HashMap<>();
+		columns = new LinkedHashMap<>();
 		classes = new ArrayList<>();
 		readCSVDataFile(filepath);
 	}
@@ -121,7 +122,7 @@ public class DatasetContainer {
 				{
 					//if (!classes.contains(lineSplit[2]))
 					//{
-						classes.add(lineSplit[2]);
+						classes.add(lineSplit[1]);
 				//	}
 					for (int i = 0; i < lineSplit.length; i++) {
 						List<Double> l = columns.get(columnsName.get(i));
@@ -155,7 +156,7 @@ public class DatasetContainer {
 	
 	public Map<String,List<Double>> getdata()
 	{
-		Map<String,List<Double>> clone = new HashMap<>();
+		Map<String,List<Double>> clone = new LinkedHashMap<>();
 		
 		for (Map.Entry<String,List<Double>> entry : columns.entrySet())
 		{

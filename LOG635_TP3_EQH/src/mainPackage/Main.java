@@ -21,8 +21,23 @@ public class Main {
 		{
 		 trainingData = new DatasetContainer(filepath);
 			 TreeBuilder builder = new TreeBuilder();
+			 Map<String,List<Double>> dataTest = trainingData.getdata();
+			 for (String s : trainingData.getColumnNames())
+			 {
+				 System.out.print(s);
+			 }
+			 System.out.println();
+			 for (int i = 0; i < 10; i++)
+			 {
+				 
+			 for (Map.Entry<String, List<Double>> entry : dataTest.entrySet())
+			 {
+				 System.out.print(entry.getValue().get(i) + "     ");
+			 }
+			 System.out.println();
+			 }
 			 
-			 builder.buildTree(trainingData);
+			// builder.buildTree(trainingData);
 		 
 			// do stuff
 		} catch(Exception e)
