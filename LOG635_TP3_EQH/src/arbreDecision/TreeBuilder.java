@@ -15,6 +15,7 @@ public class TreeBuilder
 	List<String> attributes;
 	Map<String,List<Double>> dataByAttributes; // Key is the attribute name and value is the values for all lines on this attribute
 	Map<String,List<Double>> partitionPerAttributes; // Key is the attribute name, the value is the list of partitions for this attribute
+	List<String> distinctClasses;
 	List<String> classes;
 	
 	public TreeBuilder()
@@ -27,7 +28,8 @@ public class TreeBuilder
 		attributes = container.getKeys();
 		dataByAttributes = container.getdata();
 		partitionPerAttributes = new HashMap<>();
-		classes = container.getDistinctClasses();
+		distinctClasses = container.getDistinctClasses();
+		classes = container.getClasses();
 		
 		// Fill the orderedData attributes 
 		/*for (Map<String,Double> map : data)
@@ -62,9 +64,14 @@ public class TreeBuilder
 			List<Double> partitions = new ArrayList<>();
 			for (int i = 0; i < orderedData.size() -1; i++)
 			{
-				double result = (orderedData.get(i+1) + (orderedData.get(i+1) - orderedData.get(i))/2);
-				if (result != 0)
-				partitions.add(result);
+				double d1 = orderedData.get(i);
+				double d2 = orderedData.get(i+1);		
+				if (d1 != d2)
+				{
+					double result = (d1 + ((d2 - d1)/2));
+					partitions.add(result);	
+				}
+				
 			}
 			partitionPerAttributes.put(attribute, partitions);
 		}
@@ -106,7 +113,6 @@ public class TreeBuilder
 	{
 		List<Double> dataForAttribute;
 		dataForAttribute = dataByAttributes.get(attribute);
-		List<Double> classForAttribute = dataByAttributes.get(attribute);
 		
 		
 		
@@ -152,7 +158,7 @@ public class TreeBuilder
 		int countTotalLowerThan = 0;
 		Map<String,Double> countAbovePartitionPerClass = new HashMap();
 		Map<String,Double> countBelowPartitionPerClass = new HashMap();
-		for (String s : classes)
+		for (String s : distinctClasses)
 		{
 			countAbovePartitionPerClass.put(s, 0d);
 			countBelowPartitionPerClass.put(s, 0d);
@@ -162,12 +168,12 @@ public class TreeBuilder
 			{
 					if (dataForAttribute.get(i) >= partition)
 					{
-						countAbovePartitionPerClass.put(String.valueOf(classForAttribute.get(i)), classForAttribute.get(i) + 1);
+						countAbovePartitionPerClass.put(String.valueOf(classes.get(i)), countAbovePartitionPerClass.get(classes.get(i)) + 1);
 						countTotalGreaterEqualThan++;
 					}
 					else
 					{
-						countBelowPartitionPerClass.put(String.valueOf(classForAttribute.get(i)), classForAttribute.get(i) + 1);
+						countBelowPartitionPerClass.put(String.valueOf(classes.get(i)), countBelowPartitionPerClass.get(classes.get(i)) + 1);
 						countTotalLowerThan++;
 					}
 			}
@@ -180,7 +186,7 @@ public class TreeBuilder
 			double pMinus;
 			double entropyPlus = 0;
 			double entropyMinus = 0;
-			for (String s : classes)
+			for (String s : distinctClasses)
 			{
 				pPlus = countAbovePartitionPerClass.get(s)/ countTotalGreaterEqualThan;
 				pMinus = countBelowPartitionPerClass.get(s)/countTotalLowerThan;
