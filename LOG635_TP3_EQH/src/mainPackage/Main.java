@@ -19,7 +19,7 @@ public class Main {
 		DatasetContainer trainingData = null;
 		try
 		{
-		 trainingData = new DatasetContainer(filepathTest);
+		 trainingData = new DatasetContainer(filepath);
 			 TreeBuilder builder = new TreeBuilder();
 			 Map<String,List<Double>> dataTest = trainingData.getdata();
 			 for (String s : trainingData.getColumnNames())

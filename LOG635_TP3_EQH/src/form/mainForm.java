@@ -150,7 +150,7 @@ public class mainForm extends JFrame {
 	
 	private void initComponents(){
 		this.setSize(800, 350);
-		this.setTitle("LOG635 - TP3 - Équipe H");
+		this.setTitle("LOG635 - TP3 - equipe H");
 		mainPanel = new JPanel(new SpringLayout());
 		mainPanel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
