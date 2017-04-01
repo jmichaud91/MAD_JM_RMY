@@ -1,6 +1,9 @@
 package Pretraitement;
 
+import knn.KnnAlgo;
+
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,19 +20,27 @@ public class MohamedMain {
 
         LecteurExcel lecteurExcel = new LecteurExcel(filepath);
 
-        Map<String,List<Double>> mapDuExcelBrute;
+
         // Map du excel brut sans filtre
+        Map<String,List<Double>> mapDuExcelBrute;
         mapDuExcelBrute = lecteurExcel.getHashMap();
 
-        Filtre filtre = new Filtre(mapDuExcelBrute);
 
-        //Donne filtrer ...( C<est ce que Mohamed va achever demain matin)
+        //Pretraitement des donnes avec le filtre . (Celui-ci enleve les donnees anormal comme par exemple les null)
+        Filtre filtre = new Filtre(mapDuExcelBrute);
         Map<String,List<Double>> mapFiltre = filtre.getDonnees();
 
-        //On peut supprimmer l<element a l<index 8 de la Map
-        ManipulationMap.removeByIndex(mapDuExcelBrute,8);
-        // On peut afficher une colone
-        ManipulationMap.printColumn(mapDuExcelBrute,"Age");
-        int o = 9;
+
+        //***************************************** knn ***************************************/
+
+        //Clone du Map pour l<envoyer dans le L<algo knn (Mohamed)
+        Map<String,List<Double>> mapPourKnn = new LinkedHashMap<String,List<Double>>(mapFiltre);
+
+
+        //Clone du Map pour l<envoyer dans le L<algo arbre de decision (MAD)
+        Map<String,List<Double>> mapPourLArbre = new LinkedHashMap<String,List<Double>>(mapFiltre);
+
+
+
     }
 }
