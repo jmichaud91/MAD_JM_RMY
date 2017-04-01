@@ -23,9 +23,17 @@ public class LecteurExcel {
 
     public Map<String,List<Double>> getHashMap(){
 
-       List<Double> colum = new ArrayList<Double>();
-
        String[] keys = fichierExcel.next().split(",");
+
+       for(int i=0; i<keys.length;i++){
+           keys[i]= keys[i].replace("\"","");
+       }
+
+        List<Double>[] values = new List[keys.length];
+
+        for( int i=0; i< values.length;i++ ){
+            values[i] = new ArrayList<Double>();
+        }
 
 
 
@@ -33,19 +41,29 @@ public class LecteurExcel {
             String ligne = fichierExcel.next();
             String[] tabLigne = ligne.split(",");
 
-            if(tabLigne[2].equals("NULL")){
-                colum.add(null);
-            }else {
-                colum.add(Double.parseDouble(tabLigne[2]));
-            }
 
+            for(int i =0 ; i < tabLigne.length;i++) {
+
+                if (tabLigne[i].equals("NULL")  ) {
+                    values[i].add(null);
+                }else if (tabLigne[i].contains("e-")){
+                    values[i].add(0.0);
+                } else {
+                    values[i].add(Double.parseDouble(tabLigne[i]));
+                }
+
+            }
         }
 
-       Map<String,List<Double>> map = new HashMap<String,List<Double>>();
-       map.put("Age",colum);
+       Map<String,List<Double>> map = new LinkedHashMap<String,List<Double>>();
+
+        for(int i=0; i< keys.length; i++){
+            map.put(keys[i],values[i]);
+        }
 
 
-        return null;
+
+        return map;
     }
 
 
