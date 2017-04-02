@@ -1,5 +1,7 @@
 package knn;
 
+import Pretraitement.ManipulationMap;
+
 import java.util.List;
 import java.util.Map;
 
@@ -8,26 +10,17 @@ import java.util.Map;
  */
 public class KnnAlgo {
 
-    private Map<String,List<Double>> trainData;
-    private Map<String,List<Double>> predictionData;
+    private double[][] trainData;
+    private double[][] predictionData;
     private int k ;
 
-    public KnnAlgo(Map<String, List<Double>> trainData) {
-        this.trainData = trainData;
+    public KnnAlgo(Map<String, List<Double>> trainData, Map<String, List<Double>> predictionData, int k) {
+        this.trainData= ManipulationMap.generateMatrice(trainData);
+        this.predictionData = ManipulationMap.generateMatrice(predictionData);
+        this.k = k;
     }
 
-
-    private double distance(){
-        double ageRandom = 23.0;
-
-        List<Double> colunm = this.trainData.get("Age");
-
-
-        for(double val : colunm){
-
-        }
-
-        return 2.0;
+    public void execute(){
+        System.out.println("Execution du knn !");
     }
-
 }
