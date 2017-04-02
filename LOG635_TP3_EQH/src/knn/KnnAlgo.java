@@ -138,4 +138,7 @@ public class KnnAlgo {
         return moyenne;
     }
 
+    public int getK() {
+        return K;
+    }
 }
