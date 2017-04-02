@@ -21,7 +21,7 @@ public class MohamedMain {
 
         LecteurExcel lecteurExcelTrain = new LecteurExcel(filePathTrain);
         LecteurExcel lecteurExcelPrediction = new LecteurExcel(filePathPrediction);
-        if (lecteurExcelTrain.GetFichierExcel() != null && lecteurExcelPrediction.GetFichierExcel() != null) {
+
             
         // Map du excel brut sans filtre
         Map<String,List<Double>> mapDuExcelBruteTrain;
@@ -53,13 +53,10 @@ public class MohamedMain {
         //Clone du Map pour l<envoyer dans le L<algo arbre de decision (MAD)
         Map<String,List<Double>> mapPourLArbre = new HashMap<String,List<Double>>(mapFiltreTrain);
 
-        }
-        else
-        {
-            System.out.println("Could not read files properly.  Execution stopped.");
-        }
+
     }
-    
+
+    //Execution en paralléle des algos
     private static void StartExecution(KnnAlgo algo1, KnnAlgo algo2) throws InterruptedException
     {
         Thread knnWith15 = new Thread(new Runnable() {

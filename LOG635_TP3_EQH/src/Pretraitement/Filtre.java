@@ -17,7 +17,7 @@ public class Filtre{
     }
 
     public Map<String,List<Double>> getDonnees(){
-        this.data = this.AdaptationValeurManquante(data);
+        this.data = this.adaptationValeurManquante(data);
         this.data = this.eleminationElementAnormaux(data);
         return this.data;
     }
@@ -45,7 +45,7 @@ public class Filtre{
         return crudData;
     }
 
-    private Map<String,List<Double>> AdaptationValeurManquante( Map<String,List<Double>> crudData){
+    private Map<String,List<Double>> adaptationValeurManquante(Map<String,List<Double>> crudData){
 
 
         for(String key : crudData.keySet()){
@@ -65,9 +65,6 @@ public class Filtre{
                 ManipulationMap.removeByIndex(crudData,i);
             }
         }
-
-
-
         return crudData;
     }
 

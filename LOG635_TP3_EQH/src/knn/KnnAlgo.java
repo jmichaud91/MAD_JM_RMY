@@ -13,6 +13,8 @@ public class KnnAlgo {
 
     private double[][] trainData;
     private double[][] predictionData;
+    private List<Double> niveauConfiance;
+
     private final int K;
     private final String ATTRIBUTS= "LeagueIndex,Age,HoursPerWeek,TotalHours,APM,ActionLatency,TotalMapExplored";
 
@@ -22,6 +24,7 @@ public class KnnAlgo {
         this.trainData= ManipulationMap.generateMatrice(trainData);
         this.predictionData = ManipulationMap.generateMatrice(predictionData);
         this.K = k;
+        this.niveauConfiance = new ArrayList<Double>();
     }
 
     public double getPrediction(int indexPreduiction){
@@ -74,16 +77,12 @@ public class KnnAlgo {
 
         distance = Math.sqrt(distance);
 
-//        System.out.println(trainData[1][indexTrain]);
-//        System.out.println(predictionData[1][indexPrediction]);
-//        System.out.println(distance);
-
         return distance;
     }
 
     private double obtenirGagnantVote(List<Element> prochesVoisins){
         // probablement 8 a cause des null
-        int[] classement = new int[10];
+        double[] classement = new double[10];
 
         for (Element voisin: prochesVoisins){
             classement[(int)voisin.getLeagueIndex()]+=1;
@@ -91,7 +90,7 @@ public class KnnAlgo {
 
         int maxIndex = 0;
         for (int i = 1; i < classement.length; i++) {
-            int newnumber = classement[i];
+            double newnumber = classement[i];
             if ((newnumber > classement[maxIndex])) {
                 maxIndex = i;
             }
@@ -103,8 +102,15 @@ public class KnnAlgo {
 //        }
 //        moyenne = moyenne/prochesVoisins.size();
 
+        niveauConfiance.add(classement[maxIndex]/this.K);
+
         return (double)maxIndex;
     }
+
+
+
+
+
 
     private void selectAttributs(Map<String, List<Double>> map){
 
@@ -115,6 +121,21 @@ public class KnnAlgo {
                map.remove(key);
            }
        }
+    }
+
+    public List<Double> getNiveauConfiance() {
+        return niveauConfiance;
+    }
+
+    public double getNiveauConfianceGlobal(){
+
+        double moyenne= 0;
+        for(double val : this.niveauConfiance){
+            moyenne+=val;
+        }
+        moyenne = (moyenne/this.niveauConfiance.size())*100;
+
+        return moyenne;
     }
 
 }
