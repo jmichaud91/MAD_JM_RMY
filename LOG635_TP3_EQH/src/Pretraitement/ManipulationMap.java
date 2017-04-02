@@ -1,5 +1,7 @@
 package Pretraitement;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +30,43 @@ public class ManipulationMap {
         for (Double value: column){
             System.out.println(value);
         }
+    }
+    
+    
+    public static void generatePredictionMap(Map<String,List<Double>> trainMap){
+        
+        Map<String,List<Double>> tMap = new LinkedHashMap<>(trainMap);
+
+        List<Double>[] valuesPred = new List[tMap.keySet().size()];
+
+        for( int i=0; i< valuesPred.length;i++ ){
+            valuesPred[i] = new ArrayList<Double>();
+        }
+
+        for(int i = 0; i <30 ; i++){
+            valuesPred[1] = tMap.get("GameID");
+        }
+
+    }
+
+    public static double[][] generateMatrice(Map<String,List<Double>> trainMap){
+        Map<String,List<Double>> tMap = new LinkedHashMap<String,List<Double>>(trainMap);
+
+        int nbElement = tMap.get("TotalHours").size();
+
+        double[][] matrice = new double[tMap.keySet().size()][nbElement];
+
+        int o = 0;
+        for (String key : tMap.keySet()) {
+            Double[] array = tMap.get(key).toArray(new Double[nbElement]);
+            for (int i = 0; i < array.length; i++) {
+                matrice[o][i] = array[i];
+            }
+            o++;
+        }
+        o=0;
+
+        return matrice;
     }
 
 }
