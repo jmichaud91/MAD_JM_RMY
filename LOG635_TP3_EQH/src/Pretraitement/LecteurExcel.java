@@ -20,6 +20,31 @@ public class LecteurExcel {
             e.printStackTrace();
         }
     }
+    
+    public List<Map<String,Double>> getLinesMap()
+    {
+    	String[] keys = fichierExcel.next().split(",");
+    	
+    	for(int i=0; i<keys.length;i++){
+            keys[i]= keys[i].replace("\"","");
+        }
+    	List<Map<String,Double>> lines = new ArrayList<>();
+    	
+    	
+    	while (fichierExcel.hasNext())
+    	{
+    		Map<String,Double> line = new HashMap<>();
+    		String[] tabLine = fichierExcel.next().split(",");
+    		for (int i = 0; i < tabLine.length; i++)
+    		{
+    			line.put(keys[i], Double.parseDouble(tabLine[i]));
+    		}
+    		lines.add(line);
+    	}
+    	return lines;
+    	
+    	
+    }
 
     public Map<String,List<Double>> getHashMap(){
 

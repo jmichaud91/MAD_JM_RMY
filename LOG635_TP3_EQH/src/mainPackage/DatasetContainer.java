@@ -17,6 +17,7 @@ public class DatasetContainer {
 	List<String> columnsName;
 	Map<String, List<Double>> columns;
 	List<String> classes;
+	String classesKey;
 
 	// Take into account that the exit classes are on the end of the file
 	public DatasetContainer(String filepath) throws IOException {
@@ -38,6 +39,7 @@ public class DatasetContainer {
 			// If we are at the second line set the classes
 			if (columnsName.size() ==2 )
 			{
+				classesKey = entry.getKey();
 				for (Double d : entry.getValue())
 				{
 					classes.add(String.valueOf(d));
@@ -48,59 +50,7 @@ public class DatasetContainer {
 		
 		
 	}
-	// Just for test
-	public DatasetContainer()
-	{
-		columnsName.add("testPlus");
-		columnsName.add("testMoins");
-		columns = new HashMap();
-		
-//		Map<String,List<Double>> map = new HashMap<>();
-//		List<Double> elems = new ArrayList();
-//		elems.add(e)
-//		map.put("testPlus", 6d);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testPlus", 7d);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testPlus", 6d);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testPlus", 3d);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testPlus", 2d);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testPlus", 4d);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testPlus", 2d);
-//		columns.add(map);
-//		
-//		map = new HashMap<>();
-//		map.put("testMoins", 0.2);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testMoins", 0.3);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testMoins", 0.5);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testMoins", 0.65);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testMoins", 1d);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testMoins", 1.2);
-//		columns.add(map);
-//		map = new HashMap<>();
-//		map.put("testMoins", 1.7);
-//		columns.add(map);
-	}
+	
 
 	public List<Map<String, String>> readCSVDataFile(String filePath) throws IOException {
 		String line;
@@ -116,6 +66,7 @@ public class DatasetContainer {
 					for (String s : lineSplit) {
 						columnsName.add(s);
 					}
+					classesKey = lineSplit[1];
 					firstLine = false;
 				}
 				else
@@ -190,5 +141,10 @@ public class DatasetContainer {
 	public List<String> getColumnNames()
 	{
 		return new ArrayList<>(columnsName);
+	}
+	
+	public String getClassesKey()
+	{
+		return classesKey;
 	}
 }

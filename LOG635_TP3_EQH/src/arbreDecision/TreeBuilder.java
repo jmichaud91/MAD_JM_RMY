@@ -13,46 +13,20 @@ import mainPackage.DatasetContainer;
 public class TreeBuilder 
 {
 	List<String> attributes;
-	Map<String,List<Double>> dataByAttributes; // Key is the attribute name and value is the values for all lines on this attribute
-	Map<String,List<Double>> partitionPerAttributes; // Key is the attribute name, the value is the list of partitions for this attribute
 	List<String> distinctClasses;
-	List<String> classes;
+	TreeRoot tree;
 	
 	public TreeBuilder()
 	{
 		
 	}
 	
-	public Tree buildTree(DatasetContainer container)
+	private Map<String,List<Double>> createPartitions(Map<String,List<Double>> data)
 	{
-		attributes = container.getKeys();
-		dataByAttributes = container.getdata();
-		partitionPerAttributes = new HashMap<>();
-		distinctClasses = container.getDistinctClasses();
-		classes = container.getClasses();
-		
-		// Fill the orderedData attributes 
-		/*for (Map<String,Double> map : data)
-		{
-			for (String key : attributes)
-			{
-				List<Double> attributeData = orderedDataByAttributes.get(key);
-				if (attributeData == null)
-				{
-					attributeData = new ArrayList<>();
-				}
-				if (map.get(key) == null)
-				{
-					// filter the null out
-					continue;
-				}
-				attributeData.add(map.get(key));
-				orderedDataByAttributes.put(key,attributeData);
-			}
-		}*/
-		Map<String,List<Double>> orderedDataByAttributes = container.getdata();
+		Map<String,List<Double>> unProcessedData = clone(data);
+		Map<String,List<Double>> partitionPerAttribute = new HashMap<>();
 		// sort the data for every attributes
-		for (List<Double> ls : orderedDataByAttributes.values())
+		for (List<Double> ls : unProcessedData.values())
 		{
 			Collections.sort(ls);
 		}
@@ -60,7 +34,7 @@ public class TreeBuilder
 		// Create the partitions for every attributes
 		for (String attribute : attributes)
 		{
-			List<Double> orderedData = orderedDataByAttributes.get(attribute);
+			List<Double> orderedData = unProcessedData.get(attribute);
 			List<Double> partitions = new ArrayList<>();
 			for (int i = 0; i < orderedData.size() -1; i++)
 			{
@@ -73,91 +47,236 @@ public class TreeBuilder
 				}
 				
 			}
-			partitionPerAttributes.put(attribute, partitions);
+			partitionPerAttribute.put(attribute, partitions);
 		}
+		return partitionPerAttribute;
+	}
+	
+	public TreeRoot buildTree(DatasetContainer container, double prunePercent)
+	{
+		Map<String,List<Double>> dataByAttributes; // Key is the attribute name and value is the values for all lines on this attribute
+		attributes = container.getKeys();
+		distinctClasses = container.getDistinctClasses();
+		attributes.remove(container.getClassesKey());
 		
-		double bestEM = 1;
-		String bestAttribute = "";
-		double bestPartition = 0;
+
+		
+		
+		do
+		{
+		
+			
+			double bestEM = Integer.MAX_VALUE;
+			String bestAttribute = "";
+			double bestPartition = 0;
+			int bestAttributePartitionIndex = 0;
+			Map.Entry<String, Double> bestAboveBranchClassPercentage = null;
+			Map.Entry<String, Double> bestBelowBranchClassPercentage = null;
+			
+			Map<String,Map<Symbol,List<Double>>> limitations;
+			if (tree == null)
+			{
+				limitations = new HashMap<>();
+			}
+			else
+			{
+				limitations = tree.getNextBranchConditions();
+			}
+			
+			List<String>classes = container.getClasses();
+			Map<String,List<Double>> filteredDataPerAttribute = clone(container.getdata());
+			filteredDataPerAttribute.remove(container.getClassesKey());
+			filterDataByLimitation(filteredDataPerAttribute,classes, limitations);
+			
+			Map<String,List<Double>> filteredPartitionPerAttribute = createPartitions(filteredDataPerAttribute);
+			filterPartitionByLimitation(filteredPartitionPerAttribute, limitations);
+
 		for (String attribute : attributes)
 		{
-			List<Double> attributePartition = partitionPerAttributes.get(attribute);
-			Map<String,List<Map<Symbol,List<Double>>>> limitationsPerAttribute = new HashMap<>();
-			for (Double partition : attributePartition)
+			List<Double> attributePartition = new ArrayList<>(filteredPartitionPerAttribute.get(attribute));
+			for (int  i = 0; i < attributePartition.size(); i++)
 			{
-				double em = calculateEM(attribute, partition, limitationsPerAttribute.get(attribute));
-				if (em < bestEM)
+				Object[] emAndBranchMainComposition;
+
+				emAndBranchMainComposition = calculateEM(attribute, attributePartition.get(i), filteredDataPerAttribute.get(attribute), classes);
+				
+				if ((double)emAndBranchMainComposition[0] <= bestEM)
 				{
-					bestEM = em;
+					bestEM = (double)emAndBranchMainComposition[0];
 					bestAttribute = attribute;
-					bestPartition = partition;
+					bestPartition = attributePartition.get(i);
+					bestAttributePartitionIndex = i;
+					bestAboveBranchClassPercentage = (Map.Entry<String, Double>) emAndBranchMainComposition[1];
+					bestBelowBranchClassPercentage = (Map.Entry<String, Double>) emAndBranchMainComposition[2];
 				}
-				System.out.println("em: " + em + " attribute: " + attribute + " Partition: " + partition);		
+				System.out.println("em: " + emAndBranchMainComposition[0] + " attribute: " + attribute + " Partition: " + attributePartition.get(i));		
 			}
+		}
+		filteredPartitionPerAttribute.get(bestAttribute).remove(bestAttributePartitionIndex);
+		TreeBranch branch = new TreeBranch(bestAttribute, bestPartition, new Symbol(">="));
+		
+		
+		if (bestBelowBranchClassPercentage.getValue() >= prunePercent)
+		{
+			branch.setLeftNode(new TreeLeaf(bestBelowBranchClassPercentage.getKey()));
+		}
+		if (bestAboveBranchClassPercentage.getValue() >= prunePercent)
+		{
+			branch.setRightNode(new TreeLeaf(bestAboveBranchClassPercentage.getKey()));
+		}
+		
+		if (tree == null)
+		{
+			tree = new TreeRoot(branch);
+		}
+		else
+		{
+			tree.setCurrentBranchConditions(branch);	
 		}
 		
 		System.out.println("Best em: " + bestEM + " best attribute: " + bestAttribute + " best Partition: " + bestPartition);
-		//But: calculer la meilleure EM.
-		// Pour cela, calculer H
-		// Pour cela calculer: Pour chaque attribut, pour chaque partition, calculer l'entropie moyenne.
-		// Pour calculer H pour une partition, on fait le # positif / le # total
-		// TODO create the big Map that will calculate over and under for every partition as well as H and EM
-		
-		
-		
-		Tree tree = new Tree();
+		} while (!tree.isCompleted());
+
 		return tree;
 	}
 	
-	private double calculateEM(String attribute, double partition, List<Map<Symbol,List<Double>>> limitationsForAttribute)
+	private Map<String,List<Double>> clone(Map<String,List<Double>> data)
 	{
-		List<Double> dataForAttribute;
-		dataForAttribute = dataByAttributes.get(attribute);
-		
-		
-		
-				if (limitationsForAttribute != null)
+		Map<String,List<Double>> clone = new HashMap<>();
+		for (Map.Entry<String, List<Double>> entry : data.entrySet())
+		{
+			clone.put(entry.getKey(), new ArrayList<Double>(entry.getValue()));
+		}
+		return clone;
+	}
+	
+	private Map<String,List<Double>> filterPartitionByLimitation(Map<String,List<Double>> partitions, Map<String,Map<Symbol,List<Double>>> limitations)
+	{
+		Map<String, List<Double>> filteredPartitions = new HashMap<>();
+		// Pour chaque limitations par attribut
+		for (Map.Entry<String, Map<Symbol,List<Double>>> limitationPerAttribute : limitations.entrySet())
+		{
+			// Pour chaque limitation par symbole
+			for (Map.Entry<Symbol, List<Double>> limitationPerSymbol : limitationPerAttribute.getValue().entrySet())
+			{
+				// Pour chaque limitation
+				for (Double limitation : limitationPerSymbol.getValue())
 				{
-				for (Map<Symbol, List<Double>> map : limitationsForAttribute) 
-				{
-					for (Map.Entry<Symbol, List<Double>> entry : map.entrySet())
+					if (partitions.get(limitationPerAttribute.getKey())!= null)
 					{
-						for (Double d : entry.getValue()) 
+						Iterator<Double> it = partitions.get(limitationPerAttribute.getKey()).iterator();
+						while (it.hasNext())
 						{
-							Iterator<Double> it = dataForAttribute.iterator();
+							Double partition = it.next();
 							
-							while (it.hasNext())
+							
+							boolean deleteAllGreaterThan;
+							if (limitationPerSymbol.getKey().isGreaterThan() && limitationPerSymbol.getKey().isRightBranch)
 							{
-								Double value = it.next();
-								if (entry.getKey().hasEquality() && value == d)
-								{
-									it.remove();
-								}
-								
-								else if (entry.getKey().isGreaterThan() && value > d)
-								{
-									it.remove();
-								}
-								else if (!entry.getKey().isGreaterThan() && value < d)
-								{
-									it.remove();
-								}
+								deleteAllGreaterThan = false;
 							}
+							else if (limitationPerSymbol.getKey().isGreaterThan() && !limitationPerSymbol.getKey().isRightBranch)
+							{
+								deleteAllGreaterThan = true;
+							}
+							else if (!limitationPerSymbol.getKey().isGreaterThan() && limitationPerSymbol.getKey().isRightBranch)
+							{
+								deleteAllGreaterThan = true;
+							}
+							else
+							{
+								deleteAllGreaterThan = false;
+							}
+							
+							if ((deleteAllGreaterThan && partition > limitation) || (!deleteAllGreaterThan && partition < limitation))
+							{
+								it.remove();
+							}	
 						}
 					}
 					
 				}
-				}
+			}
+		}	
+		return partitions;
 			
+	}
+	
+	
+	private Map<String,List<Double>> filterDataByLimitation(Map<String,List<Double>> data,List<String> classes, Map<String,Map<Symbol,List<Double>>> limitations)
+	{
+		// Pour chaque limitations par attribut
+		for (Map.Entry<String, Map<Symbol,List<Double>>> limitationPerAttribute : limitations.entrySet())
+		{
+			// Pour chaque limitation par symbole
+			for (Map.Entry<Symbol, List<Double>> limitationPerSymbol : limitationPerAttribute.getValue().entrySet())
+			{
+				// Pour chaque limitation
+				for (Double limitation : limitationPerSymbol.getValue())
+				{
+					if (data.get(limitationPerAttribute.getKey())!= null)
+					{
+						List<Integer> removeAtIndex = new ArrayList<>();
+						for (int i = 0; i < data.get(limitationPerAttribute.getKey()).size(); i++)
+						{
+							
+							boolean deleteAllGreaterThan;
+							if (limitationPerSymbol.getKey().isGreaterThan() && limitationPerSymbol.getKey().isRightBranch)
+							{
+								deleteAllGreaterThan = false;
+							}
+							else if (limitationPerSymbol.getKey().isGreaterThan() && !limitationPerSymbol.getKey().isRightBranch)
+							{
+								deleteAllGreaterThan = true;
+							}
+							else if (!limitationPerSymbol.getKey().isGreaterThan() && limitationPerSymbol.getKey().isRightBranch)
+							{
+								deleteAllGreaterThan = true;
+							}
+							else
+							{
+								deleteAllGreaterThan = false;
+							}
+							
+							if ((deleteAllGreaterThan && data.get(limitationPerAttribute.getKey()).get(i) > limitation) || (!deleteAllGreaterThan && data.get(limitationPerAttribute.getKey()).get(i) < limitation))
+							{
+								removeAtIndex.add(i);
+							}	
+						}
+						removeAtIndex.sort(Comparator.reverseOrder());
+						for (Map.Entry<String,List<Double>> d : data.entrySet())
+							{
+								for (int i : removeAtIndex)
+									{
+										d.getValue().remove(i);
+									}
+							}
+						for (int i : removeAtIndex)
+						{
+							classes.remove(i);
+						}
+					}
+					
+				}
+			}
+		}	
+		return data;
+			
+	}
+	/**
+	 * 
+	 * @param attribute
+	 * @param partition
+	 * @param limitationsForAttribute
+	 * @return table with 3 element. 1st is the em, second is the percentDataClass for ">=" of the most numerous class. Third is the same but for "<"
+	 */
+	private Object[] calculateEM(String attribute, double partition, List<Double> dataForAttribute, List<String> classeForAttribute)
+	{
 		
-		
-		//int countGreatherEqualThan = 0;
 		int countTotalGreaterEqualThan = 0;
-		
-		//int countLowerThan = 0;
 		int countTotalLowerThan = 0;
-		Map<String,Double> countAbovePartitionPerClass = new HashMap();
-		Map<String,Double> countBelowPartitionPerClass = new HashMap();
+		Map<String,Double> countAbovePartitionPerClass = new HashMap<>();
+		Map<String,Double> countBelowPartitionPerClass = new HashMap<>();
 		for (String s : distinctClasses)
 		{
 			countAbovePartitionPerClass.put(s, 0d);
@@ -168,38 +287,83 @@ public class TreeBuilder
 			{
 					if (dataForAttribute.get(i) >= partition)
 					{
-						countAbovePartitionPerClass.put(String.valueOf(classes.get(i)), countAbovePartitionPerClass.get(classes.get(i)) + 1);
+						countAbovePartitionPerClass.put(String.valueOf(classeForAttribute.get(i)), countAbovePartitionPerClass.get(classeForAttribute.get(i)) + 1);
 						countTotalGreaterEqualThan++;
 					}
 					else
 					{
-						countBelowPartitionPerClass.put(String.valueOf(classes.get(i)), countBelowPartitionPerClass.get(classes.get(i)) + 1);
+						countBelowPartitionPerClass.put(String.valueOf(classeForAttribute.get(i)), countBelowPartitionPerClass.get(classeForAttribute.get(i)) + 1);
 						countTotalLowerThan++;
 					}
 			}
-		
-		
-		
-		//double pPlus = countGreatherEqualThan/countTotalGreaterEqualThan;
-		//double pMinus = countLowerThan/countTotalLowerThan;
+			
 			double pPlus;
 			double pMinus;
 			double entropyPlus = 0;
 			double entropyMinus = 0;
 			for (String s : distinctClasses)
 			{
-				pPlus = countAbovePartitionPerClass.get(s)/ countTotalGreaterEqualThan;
-				pMinus = countBelowPartitionPerClass.get(s)/countTotalLowerThan;
-				entropyPlus = entropyPlus - pPlus*log2(pPlus);
-				entropyMinus = entropyMinus - pMinus*log2(pMinus);
+				pPlus = countAbovePartitionPerClass.get(s)/ (double) countTotalGreaterEqualThan;
+				pMinus = countBelowPartitionPerClass.get(s)/ (double) countTotalLowerThan;
+				// Si Pplus ou Pminus == 0, il y a une simplification à 0 du terme de droite.
+				if (pPlus != 0)
+					entropyPlus = entropyPlus - pPlus*log2(pPlus);
+				if (pMinus != 0)
+					entropyMinus = entropyMinus - pMinus*log2(pMinus);
+				
+				
 			}
-		double pPlusMaj = countTotalGreaterEqualThan/(countTotalGreaterEqualThan + countTotalLowerThan);
-		double pPlusMinus = countTotalLowerThan/(countTotalGreaterEqualThan + countTotalLowerThan);
-		//double entropyPlus = -pPlus*log2(pPlus) - (1 - pPlus)*log2(pPlus);
-		//double entropyMinus = -pMinus*log2(pMinus) - (1 - pMinus)*log2(pMinus);
-		double EM = pPlusMaj*entropyPlus + (1-pPlusMaj)*entropyMinus;
-		return EM;
+		double pPlusMaj = countTotalGreaterEqualThan/ (double) (countTotalGreaterEqualThan + countTotalLowerThan);
+		double em = pPlusMaj*entropyPlus + (1-pPlusMaj)*entropyMinus;
+		Map.Entry<String, Double> mostNumerousEntryGreaterThan = getMostNumerousEntry(countAbovePartitionPerClass);
+		mostNumerousEntryGreaterThan.setValue((mostNumerousEntryGreaterThan.getValue()/countTotalGreaterEqualThan)*100);
 		
+		Map.Entry<String, Double> mostNumerousEntryLowerThan = getMostNumerousEntry(countBelowPartitionPerClass);
+		mostNumerousEntryLowerThan.setValue((mostNumerousEntryLowerThan.getValue()/countTotalLowerThan)*100);
+		return new Object[]{em, mostNumerousEntryGreaterThan, mostNumerousEntryLowerThan};
+		
+	}
+	
+	private Map.Entry<String, Double> getMostNumerousEntry(Map<String,Double> map)
+	{
+		Map.Entry<String,Double> m = null;
+		for (Map.Entry<String, Double> entry : map.entrySet())
+		{
+			if (m == null)
+			{
+				m = entry;
+			}
+			else
+			{
+				if (entry.getValue() > m.getValue())
+				{
+					m = entry;
+				}
+			}
+		}
+		return m;
+	}
+	
+	protected class percentDataClass
+	{
+		String classe;
+		double percentage;
+		
+		public percentDataClass(String classe, int amount, int totalAmount)
+		{
+			percentage = (amount/ (double) totalAmount)*100;
+			this.classe = classe;
+		}
+		
+		public String getClasse()
+		{
+			return classe;
+		}
+		
+		public double getPercentage()
+		{
+			return percentage;
+		}
 	}
 	
 	// This division is used to grt the result of a log2. See https://en.wikipedia.org/wiki/Logarithm#Change_of_base for details
@@ -210,6 +374,7 @@ public class TreeBuilder
 	// Class for the symbol ">", "<", ">=" or "<="
 	protected class Symbol
 	{
+		boolean isRightBranch; 
 		String symbol;
 		public Symbol(String symbol)
 		{
@@ -226,13 +391,15 @@ public class TreeBuilder
 		{
 			return symbol.contains(">");
 		}
+		
+		public boolean isRightBranch()
+		{
+			return isRightBranch;
+		}
+		public void setIsRightBranch(boolean isRightBranch)
+		{
+			this.isRightBranch = isRightBranch;
+		}
 	}
 	
-	private class BranchCalculator
-	{
-		private String attribute;
-		private List<Double> partitions;
-		
-		
-	}
 }

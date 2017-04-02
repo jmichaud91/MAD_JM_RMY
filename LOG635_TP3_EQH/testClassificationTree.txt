@@ -1,0 +1,5 @@
+Positionx,Positiony
+3,0
+0.5,2
+0.8,7
+4,2
