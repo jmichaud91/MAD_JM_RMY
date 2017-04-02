@@ -52,7 +52,7 @@ public class ManipulationMap {
     public static double[][] generateMatrice(Map<String,List<Double>> trainMap){
         Map<String,List<Double>> tMap = new LinkedHashMap<String,List<Double>>(trainMap);
 
-        int nbElement = tMap.get("LeagueIndex").size();
+        int nbElement = tMap.get("TotalHours").size();
 
         double[][] matrice = new double[tMap.keySet().size()][nbElement];
 
