@@ -47,14 +47,24 @@ public class MohamedMain {
         Map<String, List<Double>> mapFiltrePrediction = filtrePrediction.getDonnees();
 
 
-        //***************************************** Algos ***************************************/
+        //***************************************** Les 2 map avec validation croisé ***************************************/
+
+//        (NbElementPredition /NbElement) = RATIO
+        final int RATIO = 4;
+
+        Map<String, List<Double>> MapCroiseTrain = ManipulationMap.generateCroiseMapTraining(mapFiltreTrain,RATIO);
+
+        Map<String, List<Double>> MapCroisePrediction = ManipulationMap.generateCroiseMapPrediction(mapFiltreTrain,RATIO);
+
+
+        //***************************************** Algos ****************************************************************/
 
         //Clone du Map pour l<envoyer dans le L<algo knn (Mohamed)
-        Map<String, List<Double>> mapTrainKnn = new LinkedHashMap<String, List<Double>>(mapFiltreTrain);
-        Map<String, List<Double>> mapPredictionKnn = new LinkedHashMap<String, List<Double>>(mapFiltrePrediction);
+        Map<String, List<Double>> mapTrainKnn = new LinkedHashMap<String, List<Double>>(MapCroiseTrain);
+        Map<String, List<Double>> mapPredictionKnn = new LinkedHashMap<String, List<Double>>(MapCroisePrediction);
 
-        KnnAlgo knnWithkEqual15 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 15);
-        KnnAlgo knnWithkEqual5 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 5);
+        KnnAlgo knnWithkEqual15 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 50);
+        KnnAlgo knnWithkEqual5 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 20);
 
 
 
