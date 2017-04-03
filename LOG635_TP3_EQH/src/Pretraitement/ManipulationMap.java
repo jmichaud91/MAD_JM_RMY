@@ -34,7 +34,7 @@ public class ManipulationMap {
     
     
     public static void generatePredictionMap(Map<String,List<Double>> trainMap){
-        
+
         Map<String,List<Double>> tMap = new LinkedHashMap<>(trainMap);
 
         List<Double>[] valuesPred = new List[tMap.keySet().size()];
@@ -68,5 +68,44 @@ public class ManipulationMap {
 
         return matrice;
     }
+
+    public static Map<String, List<Double>> generateCroiseMapTraining(Map<String, List<Double>> mapOriginal,int ratio){
+        Map<String, List<Double>> mapRetour = new LinkedHashMap<String, List<Double>>(mapOriginal);
+
+        for(int i = mapRetour.get("Age").size()-1; i>=0;i-- ){
+            if (i%ratio==0){
+                mapRetour = removeByIndexClone(mapRetour,i);
+            }
+        }
+        return  mapRetour;
+    }
+
+    public static Map<String, List<Double>> generateCroiseMapPrediction(Map<String, List<Double>> mapOriginal,int ratio){
+        Map<String, List<Double>> mapRetour = new LinkedHashMap<String, List<Double>>(mapOriginal);
+
+        for(int i = mapRetour.get("Age").size()-1; i>=0;i-- ){
+            if (i%ratio!=0){
+                mapRetour = removeByIndexClone(mapRetour,i);
+            }
+        }
+        return  mapRetour;
+    }
+
+
+    private static Map<String, List<Double>> removeByIndexClone(Map<String,List<Double>> map, int index){
+
+        Map<String, List<Double>> mapRetour = new LinkedHashMap<String, List<Double>>(map);
+
+        for(String key: mapRetour.keySet()){
+            List<Double> toModify = new ArrayList<Double>(mapRetour.get(key));
+            toModify.remove(index);
+            mapRetour.put(key,toModify);
+        }
+
+        return mapRetour;
+    }
+
+
+
 
 }
