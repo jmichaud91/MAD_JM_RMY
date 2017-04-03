@@ -133,6 +133,11 @@ public class TreeBuilder
 		return tree;
 	}
 	
+	public TreeRoot getTree()
+	{
+		return tree;
+	}
+	
 	private Map<String,List<Double>> clone(Map<String,List<Double>> data)
 	{
 		Map<String,List<Double>> clone = new HashMap<>();

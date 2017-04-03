@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import arbreDecision.DatasetContainer;
 import arbreDecision.TreeBuilder;
@@ -21,12 +22,9 @@ public class Main {
     private static AutoResetEvent algo3IsDoneEvent = new AutoResetEvent(false);
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        System.out.println("****************** Main de Mohamed **************************");
-        
-        mainForm mainform = new mainForm();
 
-        String filePathTrain = "Dataset.csv";
-        String filePathPrediction = "DataPrediction.csv";
+        String filePathTrain = "Correction-Dataset.csv";
+        String filePathPrediction = "Correction-Evaluations.csv";
 
         LecteurExcel lecteurExcelTrain = new LecteurExcel(filePathTrain);
         LecteurExcel lecteurExcelPrediction = new LecteurExcel(filePathPrediction);
@@ -66,15 +64,15 @@ public class Main {
         //***************************************** Algos ****************************************************************/
 
         //Clone du Map pour l<envoyer dans le L<algo knn (Mohamed)
-        Map<String, List<Double>> mapTrainKnn = new LinkedHashMap<String, List<Double>>(MapCroiseTrain);
-        Map<String, List<Double>> mapPredictionKnn = new LinkedHashMap<String, List<Double>>(MapCroisePrediction);
+        Map<String, List<Double>> mapTrainKnn = new LinkedHashMap<String, List<Double>>(mapFiltreTrain);
+        Map<String, List<Double>> mapPredictionKnn = new LinkedHashMap<String, List<Double>>(mapFiltrePrediction);
 
         KnnAlgo knnWithkEqual15 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 50);
         KnnAlgo knnWithkEqual5 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 20);
 
         //Clone du Map pour l<envoyer dans le L<algo arbre de decision (MAD)
 
-        Map<String, List<Double>> mapPourLArbre = new LinkedHashMap<String, List<Double>>(MapCroiseTrain);
+        Map<String, List<Double>> mapPourLArbre = new LinkedHashMap<String, List<Double>>(mapFiltreTrain);
         DatasetContainer container = new DatasetContainer(mapPourLArbre);
         TreeBuilder builder = new TreeBuilder();
         builder.setPrunePercent(80);
@@ -101,7 +99,7 @@ public class Main {
         System.out.println("classification: " + (countCorrectInstances/(double) (countCorrectInstances + countIncorrectInstances))*100);
         */
 
-         StartParalleleExecution(knnWithkEqual5, knnWithkEqual15, builder, container, MapCroisePrediction);
+         StartParalleleExecution(knnWithkEqual5, knnWithkEqual15, builder, container, mapFiltrePrediction);
 
     }
 
@@ -136,7 +134,9 @@ public class Main {
 
 
     //Execution en paralléle des 3 algos knn+arbre
-    private static void StartParalleleExecution(KnnAlgo algo1, KnnAlgo algo2, TreeBuilder algo3, DatasetContainer container, Map<String, List<Double>> mapPrediction) throws InterruptedException {
+    private static void StartParalleleExecution(KnnAlgo algo1, KnnAlgo algo2,
+    		TreeBuilder algo3, DatasetContainer container, Map<String, List<Double>> mapPrediction) throws InterruptedException, IOException {
+    	
         Thread knnWith15 = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -152,12 +152,18 @@ public class Main {
                 algo2IsDoneEvent.set();
             }
         });
-
-        Thread treeWith80PercentPrune = new Thread(new Runnable() {
+        
+        Thread treeThread = new Thread(new Runnable() {
             @Override
             public void run() {
-              TreeRoot tree = algo3.buildTree(container);
-              tree.classifyInstances(mapPrediction);
+            TreeRoot t = algo3.buildTree(container);
+            try {
+				t.serialize("mohammedSerial");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
                 algo3IsDoneEvent.set();
             }
         });
@@ -165,14 +171,49 @@ public class Main {
 
         knnWith15.start();
         knnWith5.start();
-        treeWith80PercentPrune.start();
+        treeThread.start();
 
         algo1IsDoneEvent.waitOne();
         algo2IsDoneEvent.waitOne();
         algo3IsDoneEvent.waitOne();
+        
+        Double[] KnnWith5Prediction = algo1.getNosEvaludation();
+        Double[] KnnWith15Prediction = algo2.getNosEvaludation();
+        TreeRoot tree = new TreeRoot("mohammedSerial.treeModel");
+        Double[] treePrediction = (Double[]) tree.classifyInstances(mapPrediction).toArray(new Double[KnnWith5Prediction.length]);
+        Double[] finalPredictions = new Double[KnnWith5Prediction.length];
+        for (int i = 0; i < KnnWith5Prediction.length;i++)
+        {
+        	Double prediction1 = KnnWith5Prediction[i];
+        	Double prediction2 = KnnWith15Prediction[i];
+        	Double prediction3 = treePrediction[i];
+        	
+        	if (prediction1 == prediction2)
+        	{
+        		finalPredictions[i] = prediction1;
+        	}
+        	else if (prediction2 == prediction3)
+        	{
+        		finalPredictions[i] = prediction2;
+        	}
+        	else if (prediction3 == prediction1)
+        	{
+        		finalPredictions[i] = prediction3;
+        	}
+        	else
+        	{
+        		finalPredictions[i] = prediction3;
+        	}
+        }
+        
+        for (int i = 0; i < finalPredictions.length; i++)
+        {
+        	System.out.println("prediction finale: " + finalPredictions[i]);
+        }
 
-        System.out.println("Niveau de confiance pour k=" + algo1.getK() + " : " + algo1.getNiveauConfianceGlobal() + " %");
-        System.out.println("Niveau de confiance pour k=" + algo2.getK() + " : " + algo2.getNiveauConfianceGlobal() + " %");
+     //   System.out.println("Niveau de confiance pour k=" + algo1.getK() + " : " + algo1.getNiveauConfianceGlobal() + " %");
+     //   System.out.println("Niveau de confiance pour k=" + algo2.getK() + " : " + algo2.getNiveauConfianceGlobal() + " %");
+        System.out.println("Niveau de confiance  : " + algo2.getNiveauConfianceGlobal() + " %");
     }
 
 
