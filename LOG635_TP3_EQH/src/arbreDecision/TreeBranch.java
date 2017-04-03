@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import arbreDecision.TreeBuilder.Symbol;
 
 /**
  * Created by Marc-André on 2017-03-20.
