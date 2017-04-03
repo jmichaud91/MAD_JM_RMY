@@ -67,13 +67,14 @@ public class MohamedMain {
         KnnAlgo knnWithkEqual5 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 20);
 
         //Clone du Map pour l<envoyer dans le L<algo arbre de decision (MAD)
-        Map<String, List<Double>> mapPourLArbre = new LinkedHashMap<String, List<Double>>(mapFiltreTrain);
+        
+        Map<String, List<Double>> mapPourLArbre = new LinkedHashMap<String, List<Double>>(MapCroiseTrain);
         DatasetContainer container = new DatasetContainer(mapPourLArbre);
        TreeBuilder builder = new TreeBuilder();
         TreeRoot tree = builder.buildTree(container, 80);
 
         //***** To test the classification of the tree ***
-        List<Map<String,Double>> instancesToTest =  ManipulationMap.getLinesMap(mapFiltrePrediction);
+        List<Map<String,Double>> instancesToTest =  ManipulationMap.getLinesMap(MapCroisePrediction);
         
         int countCorrectInstances = 0;
         int countIncorrectInstances = 0;
