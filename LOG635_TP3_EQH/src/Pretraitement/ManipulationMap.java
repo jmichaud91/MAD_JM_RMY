@@ -1,4 +1,4 @@
-package Pretraitement;
+package pretraitement;
 
 import java.util.ArrayList;
 import java.util.HashMap;

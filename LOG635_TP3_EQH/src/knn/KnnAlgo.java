@@ -1,10 +1,8 @@
 package knn;
 
-import Pretraitement.ManipulationMap;
+import pretraitement.ManipulationMap;
 
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.Arrays;
 
 /**
  * Created by Rachid, Mohamed Yassine on 2017-04-01.

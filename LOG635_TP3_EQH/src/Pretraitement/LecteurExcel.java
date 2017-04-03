@@ -1,4 +1,4 @@
-package Pretraitement;
+package pretraitement;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -1,4 +1,4 @@
-package Pretraitement;
+package pretraitement;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,7 +62,12 @@ public class Filtre{
 
             Collections.sort(indexesToRemove, Collections.reverseOrder());
             for (int i : indexesToRemove){
-                ManipulationMap.removeByIndex(crudData,i);
+                for (String cle : crudData.keySet()){
+                    if(crudData.get(cle).get(i)==null){
+                        crudData.get(cle).set(i,0.0);
+                    }
+                }
+//                ManipulationMap.removeByIndex(crudData,i);
             }
         }
         return crudData;
