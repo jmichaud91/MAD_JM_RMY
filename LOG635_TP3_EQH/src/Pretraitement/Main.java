@@ -1,4 +1,4 @@
-package pretraitement;
+package Pretraitement;
 
 import knn.KnnAlgo;
 
@@ -10,6 +10,7 @@ import java.util.Map;
 import arbreDecision.DatasetContainer;
 import arbreDecision.TreeBuilder;
 import arbreDecision.TreeRoot;
+import form.mainForm;
 
 /**
  * Created by Rachid, Mohamed Yassine on 2017-03-31.
@@ -21,6 +22,8 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException, IOException {
         System.out.println("****************** Main de Mohamed **************************");
+        
+        mainForm mainform = new mainForm();
 
         String filePathTrain = "Dataset.csv";
         String filePathPrediction = "DataPrediction.csv";
@@ -53,6 +56,11 @@ public class Main {
         Map<String, List<Double>> MapCroiseTrain = ManipulationMap.generateCroiseMapTraining(mapFiltreTrain,RATIO);
 
         Map<String, List<Double>> MapCroisePrediction = ManipulationMap.generateCroiseMapPrediction(mapFiltreTrain,RATIO);
+        
+      //  for (Map.Entry<String, List<Double>> entry : MapCroisePrediction.entrySet())
+       // {
+        //	MapCroiseTrain.get(entry.getKey()).addAll(entry.getValue());
+        //}
 
 
         //***************************************** Algos ****************************************************************/
@@ -69,12 +77,13 @@ public class Main {
         Map<String, List<Double>> mapPourLArbre = new LinkedHashMap<String, List<Double>>(MapCroiseTrain);
         DatasetContainer container = new DatasetContainer(mapPourLArbre);
         TreeBuilder builder = new TreeBuilder();
-        TreeRoot tree = builder.buildTree(container, 80);
+        builder.setPrunePercent(80);
+      //  TreeRoot tree = builder.buildTree(container, 80);
 
         //***** To test the classification of the tree ***
-        List<Map<String,Double>> instancesToTest =  ManipulationMap.getLinesMap(MapCroisePrediction);
+      //  List<Map<String,Double>> instancesToTest =  ManipulationMap.getLinesMap(MapCroisePrediction);
 
-        int countCorrectInstances = 0;
+       /* int countCorrectInstances = 0;
         int countIncorrectInstances = 0;
         for (Map<String,Double> lineToClassify : instancesToTest)
         {
@@ -90,8 +99,9 @@ public class Main {
 
         }
         System.out.println("classification: " + (countCorrectInstances/(double) (countCorrectInstances + countIncorrectInstances))*100);
+        */
 
-         StartParalleleExecution(knnWithkEqual5, knnWithkEqual15);
+         StartParalleleExecution(knnWithkEqual5, knnWithkEqual15, builder, container, MapCroisePrediction);
 
     }
 
@@ -126,7 +136,7 @@ public class Main {
 
 
     //Execution en paralléle des 3 algos knn+arbre
-    private static void StartParalleleExecution(KnnAlgo algo1, KnnAlgo algo2, TreeBuilder algo3, DatasetContainer container) throws InterruptedException {
+    private static void StartParalleleExecution(KnnAlgo algo1, KnnAlgo algo2, TreeBuilder algo3, DatasetContainer container, Map<String, List<Double>> mapPrediction) throws InterruptedException {
         Thread knnWith15 = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -146,7 +156,8 @@ public class Main {
         Thread treeWith80PercentPrune = new Thread(new Runnable() {
             @Override
             public void run() {
-                algo3.buildTree(container, 80);
+              TreeRoot tree = algo3.buildTree(container);
+              tree.classifyInstances(mapPrediction);
                 algo3IsDoneEvent.set();
             }
         });

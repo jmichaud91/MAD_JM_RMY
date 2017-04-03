@@ -1,6 +1,6 @@
 package knn;
 
-import pretraitement.ManipulationMap;
+import Pretraitement.ManipulationMap;
 
 import java.util.*;
 
@@ -12,9 +12,11 @@ public class KnnAlgo {
     private double[][] trainData;
     private double[][] predictionData;
     private List<Double> niveauConfiance;
-
+    private Double[] nosEvaludation;
+    
     private final int K;
     private final String ATTRIBUTS= "LeagueIndex,Age,HoursPerWeek,TotalHours,APM,ActionLatency,TotalMapExplored";
+    
 
     public KnnAlgo(Map<String, List<Double>> trainData, Map<String, List<Double>> predictionData, int k) {
         this.selectAttributs(trainData);
@@ -56,7 +58,9 @@ public class KnnAlgo {
                 bonnePredictions+=1;
             }
         }
-
+        
+        this.nosEvaludation = predictions;
+        
         bonnePredictions = (bonnePredictions/predictionData[0].length)*100;
 
 
@@ -139,4 +143,9 @@ public class KnnAlgo {
     public int getK() {
         return K;
     }
+
+	public Double[] getNosEvaludation() {
+		return nosEvaludation;
+	}
+    
 }

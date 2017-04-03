@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import Pretraitement.ManipulationMap;
+
 /**
  * Created by Yassine on 2017-03-20.
  */
@@ -162,6 +164,34 @@ public class TreeRoot {
     {
     	getNextBranchConditions(); // update the tree
     	return isCompleted;
+    }
+    
+    public List<Double> classifyInstances(Map<String, List<Double>> instances)
+    {
+    	  List<Map<String,Double>> instancesToTest =  ManipulationMap.getLinesMap(instances);
+    	  List<Double> predictions = new ArrayList<>();
+
+          int countCorrectInstances = 0;
+           int countIncorrectInstances = 0;
+           for (Map<String,Double> lineToClassify : instancesToTest)
+           {
+               String prediction = classifyInstance(lineToClassify);
+               predictions.add(Double.parseDouble(prediction));
+               if (Double.parseDouble(prediction) == lineToClassify.get("LeagueIndex"))
+               {
+                   countCorrectInstances++;
+               }
+               else
+               {
+                   countIncorrectInstances++;
+               }
+
+           }
+           
+           double pruningAtPercent =(countCorrectInstances/(double) (countCorrectInstances + countIncorrectInstances))*100; 
+           System.out.println("Taux de precision avec Arbre de décision. Pourcentage avant élagage="
+           +" : "+pruningAtPercent+"%.");
+           return predictions;
     }
     
     public String classifyInstance(Map<String,Double> instance)

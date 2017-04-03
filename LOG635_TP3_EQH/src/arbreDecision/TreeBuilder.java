@@ -13,9 +13,12 @@ public class TreeBuilder
 	List<String> attributes;
 	List<String> distinctClasses;
 	TreeRoot tree;
+	private double prunePercent;
 	
 	public TreeBuilder()
 	{
+		// default
+		prunePercent = 80;
 	}
 	
 	private Map<String,List<Double>> createPartitions(Map<String,List<Double>> data)
@@ -49,7 +52,7 @@ public class TreeBuilder
 		return partitionPerAttribute;
 	}
 	
-	public TreeRoot buildTree(DatasetContainer container, double prunePercent)
+	public TreeRoot buildTree(DatasetContainer container)
 	{
 		attributes = container.getKeys();
 		distinctClasses = container.getDistinctClasses();
@@ -354,6 +357,10 @@ public class TreeBuilder
 		{
 			return percentage;
 		}
+	}
+	public void setPrunePercent(double prunePercent)
+	{
+		this.prunePercent = prunePercent;
 	}
 	
 	// This division is used to grt the result of a log2. See https://en.wikipedia.org/wiki/Logarithm#Change_of_base for details
