@@ -8,8 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import mainPackage.DatasetContainer;
-
 public class TreeBuilder 
 {
 	List<String> attributes;
@@ -18,7 +16,6 @@ public class TreeBuilder
 	
 	public TreeBuilder()
 	{
-		
 	}
 	
 	private Map<String,List<Double>> createPartitions(Map<String,List<Double>> data)
@@ -54,18 +51,11 @@ public class TreeBuilder
 	
 	public TreeRoot buildTree(DatasetContainer container, double prunePercent)
 	{
-		Map<String,List<Double>> dataByAttributes; // Key is the attribute name and value is the values for all lines on this attribute
 		attributes = container.getKeys();
 		distinctClasses = container.getDistinctClasses();
 		attributes.remove(container.getClassesKey());
-		
-
-		
-		
 		do
 		{
-		
-			
 			double bestEM = Integer.MAX_VALUE;
 			String bestAttribute = "";
 			double bestPartition = 0;
@@ -109,7 +99,7 @@ public class TreeBuilder
 					bestAboveBranchClassPercentage = (Map.Entry<String, Double>) emAndBranchMainComposition[1];
 					bestBelowBranchClassPercentage = (Map.Entry<String, Double>) emAndBranchMainComposition[2];
 				}
-				System.out.println("em: " + emAndBranchMainComposition[0] + " attribute: " + attribute + " Partition: " + attributePartition.get(i));		
+				//System.out.println("em: " + emAndBranchMainComposition[0] + " attribute: " + attribute + " Partition: " + attributePartition.get(i));		
 			}
 		}
 		filteredPartitionPerAttribute.get(bestAttribute).remove(bestAttributePartitionIndex);
@@ -134,7 +124,7 @@ public class TreeBuilder
 			tree.setCurrentBranchConditions(branch);	
 		}
 		
-		System.out.println("Best em: " + bestEM + " best attribute: " + bestAttribute + " best Partition: " + bestPartition);
+		//System.out.println("Best em: " + bestEM + " best attribute: " + bestAttribute + " best Partition: " + bestPartition);
 		} while (!tree.isCompleted());
 
 		return tree;

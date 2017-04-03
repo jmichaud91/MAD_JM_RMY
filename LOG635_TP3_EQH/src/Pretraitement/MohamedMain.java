@@ -1,7 +1,6 @@
 ﻿package Pretraitement;
 
 import knn.KnnAlgo;
-import mainPackage.DatasetContainer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import arbreDecision.DatasetContainer;
 import arbreDecision.TreeBuilder;
 import arbreDecision.TreeRoot;
 
@@ -19,6 +19,7 @@ import arbreDecision.TreeRoot;
 public class MohamedMain {
     private static AutoResetEvent algo1IsDoneEvent = new AutoResetEvent(false);
     private static AutoResetEvent algo2IsDoneEvent = new AutoResetEvent(false);
+    private static AutoResetEvent algo3IsDoneEvent = new AutoResetEvent(false);
 
     public static void main(String[] args) throws InterruptedException, IOException {
         System.out.println("****************** Main de Mohamed **************************");
@@ -65,9 +66,6 @@ public class MohamedMain {
         KnnAlgo knnWithkEqual15 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 50);
         KnnAlgo knnWithkEqual5 = new KnnAlgo(mapTrainKnn, mapPredictionKnn, 20);
 
-
-
-
         //Clone du Map pour l<envoyer dans le L<algo arbre de decision (MAD)
         Map<String, List<Double>> mapPourLArbre = new LinkedHashMap<String, List<Double>>(mapFiltreTrain);
         DatasetContainer container = new DatasetContainer(mapPourLArbre);
@@ -98,9 +96,10 @@ public class MohamedMain {
        // StartParalleleExecution(knnWithkEqual5, knnWithkEqual15);
 
     }
+    
 
     //Execution en paralléle des algos
-    private static void StartParalleleExecution(KnnAlgo algo1, KnnAlgo algo2) throws InterruptedException {
+    private static void StartParalleleExecution(KnnAlgo algo1, KnnAlgo algo2, TreeBuilder algo3, DatasetContainer container) throws InterruptedException {
         Thread knnWith15 = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -116,16 +115,26 @@ public class MohamedMain {
                 algo2IsDoneEvent.set();
             }
         });
+        
+        Thread treeWith80PercentPrune = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                algo3.buildTree(container, 80);
+                algo3IsDoneEvent.set();
+            }
+        });
 
 
         knnWith15.start();
         knnWith5.start();
+        treeWith80PercentPrune.start();
 
         algo1IsDoneEvent.waitOne();
         algo2IsDoneEvent.waitOne();
+        algo3IsDoneEvent.waitOne();
 
-    //    System.out.println("Niveau de confiance pour k=" + algo1.getK() + " : " + algo1.getNiveauConfianceGlobal() + " %");
-      //  System.out.println("Niveau de confiance pour k=" + algo2.getK() + " : " + algo2.getNiveauConfianceGlobal() + " %");
+        System.out.println("Niveau de confiance pour k=" + algo1.getK() + " : " + algo1.getNiveauConfianceGlobal() + " %");
+        System.out.println("Niveau de confiance pour k=" + algo2.getK() + " : " + algo2.getNiveauConfianceGlobal() + " %");
     }
 
 

@@ -1,4 +1,4 @@
-package mainPackage;
+package arbreDecision;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -117,7 +117,7 @@ public class DatasetContainer {
 	}
 	public List<String> getKeys()
 	{
-		return columnsName;
+		return new ArrayList<>(columnsName);
 	}
 	
 	public List<String> getDistinctClasses()
