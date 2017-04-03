@@ -1,6 +1,7 @@
 package Pretraitement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,29 @@ public class ManipulationMap {
         for (Double value: column){
             System.out.println(value);
         }
+    }
+    
+    public static List<Map<String,Double>> getLinesMap(Map<String,List<Double>> mapPerColumn)
+    {
+    	int lineCount = 0;
+    	List<Map<String,Double>> mapPerLine = new ArrayList<>();
+    	for (Map.Entry<String, List<Double>> entry : mapPerColumn.entrySet())
+    	{
+    	lineCount = entry.getValue().size();
+    	break;
+    	}
+    	
+    	for (int i = 0; i < lineCount; i++)
+    	{
+    		Map<String,Double> line = new HashMap<>();
+    		for (Map.Entry<String, List<Double>> entry : mapPerColumn.entrySet())
+        	{
+        	line.put(entry.getKey(), entry.getValue().get(i));
+        	}
+    		mapPerLine.add(line);
+    	}
+    	return mapPerLine;
+    	
     }
     
     

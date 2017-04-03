@@ -42,8 +42,6 @@ public class LecteurExcel {
     		lines.add(line);
     	}
     	return lines;
-    	
-    	
     }
 
     public Map<String,List<Double>> getHashMap(){

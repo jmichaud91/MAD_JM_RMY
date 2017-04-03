@@ -73,8 +73,7 @@ public class MohamedMain {
         TreeRoot tree = builder.buildTree(container, 80);
 
         //***** To test the classification of the tree ***
-      /*LecteurExcel lecteurExcelClassification = new LecteurExcel(filePathPrediction);
-        List<Map<String,Double>> instancesToTest = lecteurExcelClassification.getLinesMap();
+        List<Map<String,Double>> instancesToTest =  ManipulationMap.getLinesMap(mapFiltrePrediction);
         
         int countCorrectInstances = 0;
         int countIncorrectInstances = 0;
@@ -91,7 +90,7 @@ public class MohamedMain {
         	}
         	
         }
-        System.out.println("classification: " + (countCorrectInstances/(double) (countCorrectInstances + countIncorrectInstances))*100);*/
+        System.out.println("classification: " + (countCorrectInstances/(double) (countCorrectInstances + countIncorrectInstances))*100);
 
        // StartParalleleExecution(knnWithkEqual5, knnWithkEqual15);
 
